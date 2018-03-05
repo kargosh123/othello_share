@@ -5,9 +5,15 @@
  * on (BLACK or WHITE) is passed in as "side". The constructor must finish
  * within 30 seconds.
  */
+
+Board *board;
+Side color;
+
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
+    color = side;
+    board = new Board();
 
     /*
      * TODO: Do any initialization you need to do here (setting up the board,
@@ -20,6 +26,7 @@ Player::Player(Side side) {
  * Destructor for the player.
  */
 Player::~Player() {
+    delete[] board;
 }
 
 /*
