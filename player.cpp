@@ -7,12 +7,14 @@
  */
 
 Board *board;
-Side color;
+Side ourcolor;
 
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
-    color = side;
+    
+    // Added some global variables
+    ourcolor = (side == WHITE); // can we make this a boolean to check sides?
     board = new Board();
 
     /*
@@ -47,5 +49,17 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's move before calculating your own move
      */
+    
+    // Process opponent's move and consider current state of board
+    if (opponentsMove != nullptr)
+    {
+        if (Board::hasMoves(ourcolor))
+        {
+            Move *ourmove = new Move(1, 1); // still working on this
+            board.Board::do_move(ourmove, ourcolor)
+        }
+        return ourmove;
+    }
+
     return nullptr;
 }
