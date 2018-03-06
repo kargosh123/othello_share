@@ -1,4 +1,8 @@
 #include "player.hpp"
+#define EDGE_WEIGHT     25
+#define CORNER_WEIGHT   100
+#define ADJ_C_WEIGHT    -100
+#define OTHERS          10
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -8,14 +12,24 @@
 
 Board *board;
 Side ourcolor;
+bool color;
+double scores[8][8];
 
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
     
     // Added some global variables
-    ourcolor = (side == WHITE); // can we make this a boolean to check sides?
+    ourcolor = side; // can we make this a boolean to check sides?
+    color = (side == WHITE);
     board = new Board();
+    for (int x = 0; x < 8; x++)
+    {
+        for (int y = 0; y < 8; y++)
+        {
+            scores[x][y] = 0.;
+        }
+    }
 
     /*
      * TODO: Do any initialization you need to do here (setting up the board,
@@ -49,16 +63,131 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's move before calculating your own move
      */
-    
+
     // Process opponent's move and consider current state of board
-    if (opponentsMove != nullptr)
+    if (board->hasMoves(ourcolor))
     {
-        if (Board::hasMoves(ourcolor))
+        if (testingMinimax)
         {
-            Move *ourmove = new Move(1, 1); // still working on this
-            board.Board::do_move(ourmove, ourcolor)
+            //RIRI Code
         }
-        return ourmove;
+        else
+        {
+            // Based on heuristics from: Cornell Othello
+            double c, dc, maxhc;
+            int m, maxx, maxxy, opp, multiplier;
+            Side oppcolor;
+            if (opponentsMove == nullptr)
+            {
+                board->doMove(new Move(3,2), ourcolor);
+                return new Move(3, 2);
+            }
+            if (color)
+            {
+                oppcolor = BLACK;
+            }
+            else
+            {
+                oppcolor = WHITE;
+            }
+            board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+
+            // corners
+            if (board->checkMove(new Move(0, 0), ourcolor))
+            {
+                m++;
+            }
+            else
+            {
+                opp++;
+            }
+            if (board->checkMove(new Move(7, 0), ourcolor))
+            {
+                m++;
+            }
+            else
+            {
+                opp++;
+            }
+            if (board->checkMove(new Move(0, 7), ourcolor))
+            {
+                m++;
+            }
+            else
+            {
+                opp++;
+            }
+            if (board->checkMove(new Move(7, 7), ourcolor))
+            {
+                m++;
+            }
+            else
+            {
+                opp++;
+            }
+            c = 100* (m-opp)/(m+opp);
+
+            //disc count
+            m = board->count(ourcolor);
+            opp = board->count(oppcolor);
+            dc = (1/100)*(m-opp)/(m+opp);
+
+            //get best move
+            maxhc = scores[0][0];
+            maxx = 0;
+            maxxy = 0;
+            multiplier = OTHERS;
+            for (int x = 0; x < 8; x++)
+            {
+                for (int y = 0; y < 8; y++)
+                {
+                    if (y == 0 || y == 7)
+                    {
+                        if (x == 0 || x == 7)
+                        {
+                            multiplier = CORNER_WEIGHT;
+                        }
+                        else if (x != 1 && x != 6)
+                        {
+                            multiplier = EDGE_WEIGHT;
+                        }
+                        else
+                        {
+                            multiplier = ADJ_C_WEIGHT;
+                        }
+                    }
+                    if (multiplier != CORNER_WEIGHT && (x == 0 || x == 7))
+                    {
+                        if (y != 1 && y != 6)
+                        {
+                            multiplier = EDGE_WEIGHT;
+                        }
+                        else
+                        {
+                            multiplier = ADJ_C_WEIGHT;
+                        }
+                    }
+                    if ((x == 1 && y == 1) || (x == 6 && y == 6) || 
+                        (x == 1 && y == 6) || (x == 6 && y == 1))
+                    {
+                        multiplier = ADJ_C_WEIGHT;
+                    }
+
+                    if (board->checkMove(new Move(x, y), ourcolor))
+                    {
+                        scores[x][y] += multiplier*(c+dc);
+                        if (maxhc < scores[x][y])
+                        {
+                            maxhc = scores[x][y];
+                            maxx = x;
+                            maxxy = y;
+                        }
+                    }
+                }
+            }
+
+            return new Move(maxx, maxxy);
+        }
     }
 
     return nullptr;
