@@ -2,7 +2,8 @@
 #define EDGE_WEIGHT     25
 #define CORNER_WEIGHT   100
 #define ADJ_C_WEIGHT    -100
-#define OTHERS          10
+#define ADJ_C_MID_WT    -200
+#define OTHERS          1
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -46,6 +47,51 @@ Player::~Player() {
     delete[] board;
 }
 
+double Player::doDC(Side oppcolor)
+{
+    int m = 0, opp = 0;
+    m = board->count(ourcolor);
+    opp = board->count(oppcolor);
+    return (100)*(m-opp)/(m+opp);
+}
+
+double Player::doCorner()
+{
+    int m = 0, opp = 0;
+    if (board->checkMove(new Move(0, 0), ourcolor))
+    {
+        m++;
+    }
+    else
+    {
+        opp++;
+    }
+    if (board->checkMove(new Move(7, 0), ourcolor))
+    {
+        m++;
+    }
+    else
+    {
+        opp++;
+    }
+    if (board->checkMove(new Move(0, 7), ourcolor))
+    {
+        m++;
+    }
+    else
+    {
+        opp++;
+    }
+    if (board->checkMove(new Move(7, 7), ourcolor))
+    {
+        m++;
+    }
+    else
+    {
+        opp++;
+    }
+    return 100* (m-opp)/(m+opp);
+}
 /*
  * Compute the next move given the opponent's last move. Your AI is
  * expected to keep track of the board on its own. If this is the first move,
@@ -77,12 +123,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             double c, dc, maxhc;
             int m, maxx, maxxy, opp, multiplier;
             Side oppcolor;
-            if (opponentsMove == nullptr)
-            {
-                board->doMove(new Move(3,2), ourcolor);
-                return new Move(3, 2);
-            }
-            if (color)
+            if (ourcolor == WHITE)
             {
                 oppcolor = BLACK;
             }
@@ -90,52 +131,21 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             {
                 oppcolor = WHITE;
             }
-            board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+            if (opponentsMove != nullptr)
+            {
+                board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+            }
 
             // corners
-            if (board->checkMove(new Move(0, 0), ourcolor))
-            {
-                m++;
-            }
-            else
-            {
-                opp++;
-            }
-            if (board->checkMove(new Move(7, 0), ourcolor))
-            {
-                m++;
-            }
-            else
-            {
-                opp++;
-            }
-            if (board->checkMove(new Move(0, 7), ourcolor))
-            {
-                m++;
-            }
-            else
-            {
-                opp++;
-            }
-            if (board->checkMove(new Move(7, 7), ourcolor))
-            {
-                m++;
-            }
-            else
-            {
-                opp++;
-            }
-            c = 100* (m-opp)/(m+opp);
+            c = doCorner();
 
             //disc count
-            m = board->count(ourcolor);
-            opp = board->count(oppcolor);
-            dc = (1/100)*(m-opp)/(m+opp);
+            dc = doDC(oppcolor);
 
             //get best move
             maxhc = scores[0][0];
-            maxx = 0;
-            maxxy = 0;
+            maxx = -1;
+            maxxy = -1;
             multiplier = OTHERS;
             for (int x = 0; x < 8; x++)
             {
@@ -170,12 +180,18 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                     if ((x == 1 && y == 1) || (x == 6 && y == 6) || 
                         (x == 1 && y == 6) || (x == 6 && y == 1))
                     {
-                        multiplier = ADJ_C_WEIGHT;
+                        multiplier = ADJ_C_MID_WT;
                     }
 
                     if (board->checkMove(new Move(x, y), ourcolor))
                     {
-                        scores[x][y] += multiplier*(c+dc);
+                        if (maxx == -1)
+                        {
+                            maxhc = scores[x][y];
+                            maxx = x;
+                            maxxy = y;
+                        }
+                        scores[x][y] = multiplier*(10*c+5*dc);
                         if (maxhc < scores[x][y])
                         {
                             maxhc = scores[x][y];
@@ -186,6 +202,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 }
             }
 
+            if (maxx == -1)
+            {
+                return nullptr;
+            }
+            board->doMove(new Move(maxx, maxxy), ourcolor);
             return new Move(maxx, maxxy);
         }
     }
