@@ -1,4 +1,5 @@
 #include "player.hpp"
+#include <vector>
 #define EDGE_WEIGHT     25
 #define CORNER_WEIGHT   100
 #define ADJ_C_WEIGHT    -100
@@ -115,6 +116,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         if (testingMinimax)
         {
             // access with helper function
+            
 
         }
         else
@@ -219,16 +221,16 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
  * @param board, side
  * @return vector with pointers for each move
  */
-std::vector<*Move> Player::possMoves(Board board, Side side)
+vector<Move*> Player::possMoves(Board *board, Side side)
 {
-    std::vector<*Move> moves;
+    vector<Move*> moves;
 
     for (int a = 0; a < 8; a++)
     {
         for (int b = 0; b < 8; b++)
         {
             Move *play = new Move(a, b);
-            if(board.checkMove(play, side))
+            if(board->checkMove(play, side))
             {
                 moves.push_back(play);
             }
@@ -241,7 +243,7 @@ std::vector<*Move> Player::possMoves(Board board, Side side)
  * Minimax helper function for minimax
  * Welp I hope this works
  */
-int *Player::minimax(Board *board, int depth, Side oppcolor)
+int Player::minimax(Board *board, int depth, Side oppcolor)
 {
     // create vector with all possible moves (done in above helper function)
     // create another vector with scores
@@ -255,8 +257,8 @@ int *Player::minimax(Board *board, int depth, Side oppcolor)
         // recursively call this function
     // loop through scores vector to find highest value which corresponds to index of best move
 
-    std::vector<*Move> possible_moves = Player::possMoves(board, color);
-    std::vector<int> scores;
+    vector<Move*> possible_moves = possMoves(board, ourcolor);
+    vector<int> score;
 
     int temp;
     int alpha = -1e9;
@@ -271,42 +273,30 @@ int *Player::minimax(Board *board, int depth, Side oppcolor)
     {
         for (int i = 0; i < possible_moves.size(); i++)
         {
-            board->copy()->doMove(possible_moves[i], oppcolor);
+            Board *copied = board->copy();
+            copied->doMove(possible_moves[i], oppcolor);
 
             // calls heuristic to generate score for possible move
-            scores.push_back(Player::doMove(possible_moves[i], 30));
-
             // I think I already did this above though
-            temp = Player::minimax(board->copy(), depth-1, my_side);
+            temp = minimax(copied, depth-1, ourcolor);
 
             // delete copy of board?
 
-                if (alpha < temp)
-                {
-                    cx = i;
-                    cy = j;
-                    alpha = temp;
-                }
-        }
-
-        // find index of highest score
-        int highest_score = scores[0];
-        int high_index = 0;
-        for (int j = 0; j < possible_moves.size())
-        {
-            if (scores[j] > highest_score)
+            if (alpha < temp)
             {
-                highest_score = scores[j];
-                high_index = j;
+                cx = possible_moves[i]->getX();
+                cy = possible_moves[i]->getY();
+                alpha = temp;
             }
+            delete[] copied;
         }
 
         if (cx != -1)
         {
-            board->doMove(cx, cy);
+            board->doMove(new Move(cx, cy), oppcolor);
         }
 
         // return alpha;
-        return high_index;
+        return alpha;
     }
 }

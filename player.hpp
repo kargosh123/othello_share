@@ -4,6 +4,7 @@
 #include <iostream>
 #include "common.hpp"
 #include "board.hpp"
+#include <vector>
 using namespace std;
 
 class Player {
@@ -15,6 +16,8 @@ public:
     double doDC(Side oppcolor);
     double doCorner();
     Move *doMove(Move *opponentsMove, int msLeft);
+    vector<Move*> possMoves(Board *board, Side side);
+    int minimax(Board *board, int depth, Side oppcolor);
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
