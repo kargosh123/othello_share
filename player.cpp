@@ -16,7 +16,6 @@ Board *board;
 Side ourcolor;
 bool color;
 double scores[8][8];
-// lol we should sort this out huehue
 
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
@@ -111,32 +110,32 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * TODO: Implement how moves your AI should play here. You should first
      * process the opponent's move before calculating your own move
      */
+
+    // Process opponent's move and consider current state of board
+    Side oppcolor;
+    if (ourcolor == WHITE)
+    {
+        oppcolor = BLACK;
+    }
+    else
+    {
+        oppcolor = WHITE;
+    }
+    if (opponentsMove != nullptr)
+    {
+        board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+    }
     if (board->hasMoves(ourcolor))
     {
         if (testingMinimax)
         {
             // access with helper function
-
-
         }
         else
         {
             // Based on heuristics from: Cornell Othello
             double c, dc, maxhc;
             int m, maxx, maxxy, opp, multiplier;
-            Side oppcolor;
-            if (ourcolor == WHITE)
-            {
-                oppcolor = BLACK;
-            }
-            else
-            {
-                oppcolor = WHITE;
-            }
-            if (opponentsMove != nullptr)
-            {
-                board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
-            }
 
             // corners
             c = doCorner();
@@ -204,10 +203,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 }
             }
 
-            if (maxx == -1)
-            {
-                return nullptr;
-            }
             board->doMove(new Move(maxx, maxxy), ourcolor);
             return new Move(maxx, maxxy);
         }
