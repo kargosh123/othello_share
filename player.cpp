@@ -50,12 +50,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
      * process the opponent's move before calculating your own move
      */
     
-    // Process opponent's move and consider current state of board
     if (opponentsMove != nullptr)
     {
         if (Board::hasMoves(ourcolor))
         {
-            Move *ourmove = new Move(1, 1); // still working on this
+            Move *ourmove = j//output from ; // still working on this
             board.Board::do_move(ourmove, ourcolor)
         }
         return ourmove;
