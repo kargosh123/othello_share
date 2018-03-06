@@ -12,6 +12,8 @@ public:
     Player(Side side);
     ~Player();
 
+    double doDC(Side oppcolor);
+    double doCorner();
     Move *doMove(Move *opponentsMove, int msLeft);
 
     // Flag to tell if the player is running within the test_minimax context
