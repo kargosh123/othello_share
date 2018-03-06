@@ -77,11 +77,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             double c, dc, maxhc;
             int m, maxx, maxxy, opp, multiplier;
             Side oppcolor;
-            if (opponentsMove == nullptr)
-            {
-                board->doMove(new Move(3,2), ourcolor);
-                return new Move(3, 2);
-            }
             if (color)
             {
                 oppcolor = BLACK;
@@ -90,7 +85,10 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             {
                 oppcolor = WHITE;
             }
-            board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+            if (opponentsMove != nullptr)
+            {
+                board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+            }
 
             // corners
             if (board->checkMove(new Move(0, 0), ourcolor))
@@ -175,7 +173,13 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
                     if (board->checkMove(new Move(x, y), ourcolor))
                     {
-                        scores[x][y] += multiplier*(c+dc);
+                        if (maxx == 0 && maxxy == 0)
+                        {
+                            maxhc = scores[x][y];
+                            maxx = x;
+                            maxxy = y;
+                        }
+                        scores[x][y] = multiplier*(c+dc);
                         if (maxhc < scores[x][y])
                         {
                             maxhc = scores[x][y];
@@ -186,6 +190,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 }
             }
 
+            board->doMove(new Move(maxx, maxxy), ourcolor);
             return new Move(maxx, maxxy);
         }
     }
