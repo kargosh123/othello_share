@@ -2,7 +2,8 @@
 #define EDGE_WEIGHT     25
 #define CORNER_WEIGHT   100
 #define ADJ_C_WEIGHT    -100
-#define OTHERS          10
+#define ADJ_C_MID_WT    -200
+#define OTHERS          1
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -50,7 +51,7 @@ double Player::doDC(Side oppcolor)
     int m = 0, opp = 0;
     m = board->count(ourcolor);
     opp = board->count(oppcolor);
-    return (1/100)*(m-opp)/(m+opp);
+    return (100)*(m-opp)/(m+opp);
 }
 
 double Player::doCorner()
@@ -143,8 +144,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
             //get best move
             maxhc = scores[0][0];
-            maxx = 0;
-            maxxy = 0;
+            maxx = -1;
+            maxxy = -1;
             multiplier = OTHERS;
             for (int x = 0; x < 8; x++)
             {
@@ -179,18 +180,18 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                     if ((x == 1 && y == 1) || (x == 6 && y == 6) || 
                         (x == 1 && y == 6) || (x == 6 && y == 1))
                     {
-                        multiplier = ADJ_C_WEIGHT;
+                        multiplier = ADJ_C_MID_WT;
                     }
 
                     if (board->checkMove(new Move(x, y), ourcolor))
                     {
-                        if (maxx == 0 && maxxy == 0)
+                        if (maxx == -1)
                         {
                             maxhc = scores[x][y];
                             maxx = x;
                             maxxy = y;
                         }
-                        scores[x][y] += multiplier*(c+dc);
+                        scores[x][y] = multiplier*(10*c+5*dc);
                         if (maxhc < scores[x][y])
                         {
                             maxhc = scores[x][y];
@@ -201,6 +202,10 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 }
             }
 
+            if (maxx == -1)
+            {
+                return nullptr;
+            }
             board->doMove(new Move(maxx, maxxy), ourcolor);
             return new Move(maxx, maxxy);
         }
