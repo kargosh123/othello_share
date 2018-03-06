@@ -116,7 +116,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         if (testingMinimax)
         {
             // access with helper function
-            
+
 
         }
         else
@@ -264,7 +264,7 @@ int Player::minimax(Board *board, int depth, Side oppcolor)
     int alpha = -1e9;
     int cx = -1, cy = -1;
 
-    if (possible_moves.size() == 0)
+    if (possible_moves.size() == 0 || depth <= 0)
     {
         // shouldn't this return null or nullptr or something cuz there are no possible moves left?
         return board->count(ourcolor)-board->count(oppcolor);
