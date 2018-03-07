@@ -14,7 +14,6 @@
 
 Board *board;
 Side ourcolor;
-bool color;
 double scores[8][8];
 
 Player::Player(Side side) {
@@ -22,8 +21,7 @@ Player::Player(Side side) {
     testingMinimax = false;
     
     // Added some global variables
-    ourcolor = side; // can we make this a boolean to check sides?
-    color = (side == WHITE);
+    ourcolor = side;
     board = new Board();
     for (int x = 0; x < 8; x++)
     {
@@ -129,7 +127,26 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     {
         if (testingMinimax)
         {
-            // access with helper function
+            // RIRI CODE
+            vector<Move*> possible_moves = possMoves(board, ourcolor);
+            int cx, cy, tscore, maxscore;
+            maxscore = -1e9;
+            tscore = 0;
+
+            for (int i = 0; i < possible_moves.size(); i++)
+            {
+                Board *copied = board->copy();
+                copied->doMove(new Move(possible_moves[i]->getX(), possible_moves[i]->getY()), ourcolor);
+                tscore = minimax(copied, 3, oppcolor);
+                if (tscore > maxscore)
+                {
+                    maxscore = tscore;
+                    cx = possible_moves[i]->getX();
+                    cy = possible_moves[i]->getY();
+                }
+            }
+
+            return new Move(cx, cy);
         }
         else
         {
@@ -216,7 +233,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
  * @param board, side
  * @return vector with pointers for each move
  */
-vector<Move*> Player::possMoves(Board *board, Side side)
+vector<Move*> Player::possMoves(Board *cboard, Side side)
 {
     vector<Move*> moves;
 
@@ -225,7 +242,7 @@ vector<Move*> Player::possMoves(Board *board, Side side)
         for (int b = 0; b < 8; b++)
         {
             Move *play = new Move(a, b);
-            if(board->checkMove(play, side))
+            if(cboard->checkMove(play, side))
             {
                 moves.push_back(play);
             }
@@ -238,7 +255,7 @@ vector<Move*> Player::possMoves(Board *board, Side side)
  * Minimax helper function for minimax
  * Welp I hope this works
  */
-int Player::minimax(Board *board, int depth, Side oppcolor)
+int Player::minimax(Board *cboard, int depth, Side oppcolor)
 {
     // create vector with all possible moves (done in above helper function)
     // create another vector with scores
@@ -252,8 +269,7 @@ int Player::minimax(Board *board, int depth, Side oppcolor)
         // recursively call this function
     // loop through scores vector to find highest value which corresponds to index of best move
 
-    vector<Move*> possible_moves = possMoves(board, ourcolor);
-    vector<int> score;
+    vector<Move*> possible_moves = possMoves(cboard, oppcolor);
 
     int temp;
     int alpha = -1e9;
@@ -261,19 +277,17 @@ int Player::minimax(Board *board, int depth, Side oppcolor)
 
     if (possible_moves.size() == 0 || depth <= 0)
     {
-        // shouldn't this return null or nullptr or something cuz there are no possible moves left?
-        return board->count(ourcolor)-board->count(oppcolor);
+        return -cboard->count(oppcolor)+cboard->count(ourcolor);
     }
     else
     {
         for (int i = 0; i < possible_moves.size(); i++)
         {
-            Board *copied = board->copy();
+            Board *copied = cboard->copy();
             copied->doMove(possible_moves[i], oppcolor);
 
             // calls heuristic to generate score for possible move
-            // I think I already did this above though
-            temp = minimax(copied, depth-1, ourcolor);
+            temp = minimax(copied, depth-1, oppcolor);
 
             // delete copy of board?
 
@@ -283,12 +297,11 @@ int Player::minimax(Board *board, int depth, Side oppcolor)
                 cy = possible_moves[i]->getY();
                 alpha = temp;
             }
-            delete[] copied;
         }
 
         if (cx != -1)
         {
-            board->doMove(new Move(cx, cy), oppcolor);
+            cboard->doMove(new Move(cx, cy), oppcolor);
         }
 
         // return alpha;
