@@ -45,6 +45,11 @@ Player::~Player() {
     delete[] board;
 }
 
+/*
+* doDC is based off of a Cornell heuristic to count discs for each
+* team and result in a weighted score
+* @param oppColor - opponent Side
+*/
 double Player::doDC(Side oppcolor)
 {
     int m = 0, opp = 0;
@@ -53,6 +58,10 @@ double Player::doDC(Side oppcolor)
     return (100)*(m-opp)/(m+opp);
 }
 
+/*
+* doCorner is based off of a Cornell heuristic to
+* determine the number of corners each opponent has.
+*/
 double Player::doCorner()
 {
     int m = 0, opp = 0;
@@ -127,7 +136,6 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     {
         if (testingMinimax)
         {
-            // RIRI CODE
             vector<Move*> possible_moves = possMoves(board, ourcolor);
             int cx, cy, tscore, maxscore;
             maxscore = -1e9;
@@ -253,7 +261,8 @@ vector<Move*> Player::possMoves(Board *cboard, Side side)
 
 /*
  * Minimax helper function for minimax
- * Welp I hope this works
+ * @param board, depth, side for opposite player
+ * @return alpha (score)
  */
 int Player::minimax(Board *cboard, int depth, Side oppcolor)
 {
