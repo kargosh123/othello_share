@@ -5,7 +5,7 @@
 #define ADJ_C_WEIGHT    -100
 #define ADJ_C_MID_WT    -200
 #define OTHERS          1
-#define DLEVEL          4
+#define DLEVEL          3
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -25,6 +25,14 @@ Player::Player(Side side) {
     
     // Added some global variables
     ourcolor = side;
+    if (ourcolor == WHITE)
+    {
+        std::cerr << "WHITE" << std::endl;
+    }
+    else
+    {
+        std::cerr << "BLACK" << std::endl;
+    }
     board = new Board();
     for (int x = 0; x < 8; x++)
     {
@@ -118,6 +126,11 @@ void Player::setBoard()
     board->setBoard(boardData);
 }
 
+void Player::freeMoves(vector<Move*> possible_moves)
+{
+    possible_moves.clear();
+}
+
 
 /*
  * Compute the next move given the opponent's last move. Your AI is
@@ -158,35 +171,40 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         {
             setBoard();
         }
-        if (!better)
+        if (better)
         {
             vector<Move*> possible_moves = possMoves(board, ourcolor);
-            int cx, cy, tscore, maxscore;
+            int cx, cy, tscore, maxscore, alpha, beta;
             maxscore = -1e9;
+            alpha = -1e9;
+            beta = 1e9;
             tscore = 0;
             std::cerr << "Possible Moves: " << possible_moves.size() << std::endl;
 
+            if (possible_moves.size() <= 0)
+            {
+                return nullptr;
+            }
             for (int i = 0; i < possible_moves.size(); i++)
             {
                 std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
                 Board *copied = board->copy();
                 copied->doMove(possible_moves[i], ourcolor);
-                tscore = minimax(copied, DLEVEL, oppcolor);
+                tscore = ab(copied, DLEVEL, ourcolor, oppcolor, alpha, beta);
                 if (tscore > maxscore)
                 {
                     maxscore = tscore;
                     cx = possible_moves[i]->getX();
                     cy = possible_moves[i]->getY();
                 }
+
+                delete copied;
             }
 
             Move* myMove = new Move(cx, cy);
             board->doMove(myMove, ourcolor);
 
-            while (possible_moves.size() > 0)
-            {
-                possible_moves.pop_back();
-            }
+            freeMoves(possible_moves);
             return myMove;
         }
         else
@@ -287,6 +305,7 @@ vector<Move*> Player::possMoves(Board *cboard, Side side)
             {
                 moves.push_back(play);
             }
+            delete play;
         }
     }
     return moves;
@@ -319,6 +338,7 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
 
     if (possible_moves.size() == 0 || depth <= 0)
     {
+        freeMoves(possible_moves);
         return -cboard->count(oppcolor)+cboard->count(ourcolor);
     }
     else
@@ -335,28 +355,25 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
 
             if (alpha < temp)
             {
-                cx = possible_moves[i]->getX();
-                cy = possible_moves[i]->getY();
+                // cx = possible_moves[i]->getX();
+                // cy = possible_moves[i]->getY();
                 alpha = temp;
             }
             delete copied;
         }
 
-        if (cx != -1)
-        {
-            cboard->doMove(new Move(cx, cy), oppcolor);
-        }
+        // if (cx != -1)
+        // {
+        //     cboard->doMove(new Move(cx, cy), oppcolor);
+        // }
 
         // return alpha;
-        while (possible_moves.size() > 0)
-        {
-            possible_moves.pop_back();
-        }
+        freeMoves(possible_moves);
         return alpha;
     }
 }
 
-int Player::ab(Board *cboard, int depth, Side oppcolor, int alpha, int beta)
+int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha, int beta)
 {
     vector<Move*> possible_moves = possMoves(cboard, oppcolor);
 
@@ -365,7 +382,8 @@ int Player::ab(Board *cboard, int depth, Side oppcolor, int alpha, int beta)
 
     if (possible_moves.size() == 0 || depth <= 0)
     {
-        return -cboard->count(oppcolor)+cboard->count(ourcolor);
+        freeMoves(possible_moves);
+        return -cboard->count(oppcolor)+cboard->count(current);
     }
     else
     {
@@ -375,28 +393,34 @@ int Player::ab(Board *cboard, int depth, Side oppcolor, int alpha, int beta)
             copied->doMove(possible_moves[i], oppcolor);
 
             // calls heuristic to generate score for possible move
-            temp = -ab(copied, depth-1, oppcolor, -beta, -alpha);
+            temp = -ab(copied, depth-1, oppcolor, current, -beta, -alpha);
 
             // delete copy of board?
 
             if (alpha < temp)
             {
-                cx = possible_moves[i]->getX();
-                cy = possible_moves[i]->getY();
+                // cx = possible_moves[i]->getX();
+                // cy = possible_moves[i]->getY();
                 alpha = temp;
             }
             if (temp >= beta)
             {
+                std::cerr << "beta: " << beta << std::endl;
+                freeMoves(possible_moves);
+                delete copied;
                 return beta;
             }
+            delete copied;
         }
 
-        if (cx != -1)
-        {
-            cboard->doMove(new Move(cx, cy), oppcolor);
-        }
+        // if (cx != -1)
+        // {
+        //     cboard->doMove(new Move(cx, cy), oppcolor);
+        // }
 
         // return alpha;
+        std::cerr << "alpha: " << alpha << std::endl;
+        freeMoves(possible_moves);
         return alpha;
     }
 }
