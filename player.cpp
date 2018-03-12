@@ -15,10 +15,12 @@
 Board *board;
 Side ourcolor;
 double scores[8][8];
+bool better;
 
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
+    better = true;
     
     // Added some global variables
     ourcolor = side;
@@ -154,10 +156,14 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         if (testingMinimax)
         {
             setBoard();
+        }
+        if (better)
+        {
             vector<Move*> possible_moves = possMoves(board, ourcolor);
             int cx, cy, tscore, maxscore;
             maxscore = -1e9;
             tscore = 0;
+            std::cerr << "Possible Moves: " << possible_moves.size() << std::endl;
 
             for (int i = 0; i < possible_moves.size(); i++)
             {
@@ -323,6 +329,51 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
                 cx = possible_moves[i]->getX();
                 cy = possible_moves[i]->getY();
                 alpha = temp;
+            }
+        }
+
+        if (cx != -1)
+        {
+            cboard->doMove(new Move(cx, cy), oppcolor);
+        }
+
+        // return alpha;
+        return alpha;
+    }
+}
+
+int Player::ab(Board *cboard, int depth, Side oppcolor, int alpha, int beta)
+{
+    vector<Move*> possible_moves = possMoves(cboard, oppcolor);
+
+    int temp;
+    int cx = -1, cy = -1;
+
+    if (possible_moves.size() == 0 || depth <= 0)
+    {
+        return -cboard->count(oppcolor)+cboard->count(ourcolor);
+    }
+    else
+    {
+        for (int i = 0; i < possible_moves.size(); i++)
+        {
+            Board *copied = cboard->copy();
+            copied->doMove(possible_moves[i], oppcolor);
+
+            // calls heuristic to generate score for possible move
+            temp = -ab(copied, depth-1, oppcolor, -beta, -alpha);
+
+            // delete copy of board?
+
+            if (alpha < temp)
+            {
+                cx = possible_moves[i]->getX();
+                cy = possible_moves[i]->getY();
+                alpha = temp;
+            }
+            if (temp >= beta)
+            {
+                return beta;
             }
         }
 

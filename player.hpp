@@ -18,7 +18,8 @@ public:
     void setBoard();
     Move *doMove(Move *opponentsMove, int msLeft);
     vector<Move*> possMoves(Board *board, Side side);
-    int minimax(Board *board, int depth, Side oppcolor);
+    int minimax(Board *cboard, int depth, Side oppcolor);
+    int ab(Board *cboard, int depth, Side oppcolor, int alpha, int beta);
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
