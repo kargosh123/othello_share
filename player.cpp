@@ -5,6 +5,7 @@
 #define ADJ_C_WEIGHT    -100
 #define ADJ_C_MID_WT    -200
 #define OTHERS          1
+#define DLEVEL          4
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -149,15 +150,17 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
     if (opponentsMove != nullptr)
     {
-        board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+        //board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+        board->doMove(opponentsMove, oppcolor);
     }
     if (board->hasMoves(ourcolor))
     {
         if (testingMinimax)
         {
+            std::cerr << "true" << std::endl;
             setBoard();
         }
-        if (better)
+        if (!better)
         {
             vector<Move*> possible_moves = possMoves(board, ourcolor);
             int cx, cy, tscore, maxscore;
@@ -167,14 +170,15 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
             for (int i = 0; i < possible_moves.size(); i++)
             {
+                std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
                 Board *copied = board->copy();
-                copied->doMove(new Move(possible_moves[i]->getX(), possible_moves[i]->getY()), ourcolor);
-                tscore = minimax(copied, 3, oppcolor);
+                copied->doMove(new Move(possible_moves[i]->getY(), possible_moves[i]->getX()), ourcolor);
+                tscore = minimax(copied, DLEVEL, oppcolor);
                 if (tscore > maxscore)
                 {
                     maxscore = tscore;
-                    cx = possible_moves[i]->getX();
-                    cy = possible_moves[i]->getY();
+                    cx = possible_moves[i]->getY();
+                    cy = possible_moves[i]->getX();
                 }
             }
 
