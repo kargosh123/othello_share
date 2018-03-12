@@ -1,10 +1,11 @@
 #include "player.hpp"
 #include <vector>
-#define EDGE_WEIGHT     25
-#define CORNER_WEIGHT   100
+#define EDGE_WEIGHT     5
+#define CORNER_WEIGHT   10
 #define ADJ_C_WEIGHT    -100
 #define ADJ_C_MID_WT    -200
 #define OTHERS          1
+#define DLEVEL          3
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -15,13 +16,23 @@
 Board *board;
 Side ourcolor;
 double scores[8][8];
+bool better;
 
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = false;
+    better = true;
     
     // Added some global variables
     ourcolor = side;
+    if (ourcolor == WHITE)
+    {
+        std::cerr << "WHITE" << std::endl;
+    }
+    else
+    {
+        std::cerr << "BLACK" << std::endl;
+    }
     board = new Board();
     for (int x = 0; x < 8; x++)
     {
@@ -45,6 +56,11 @@ Player::~Player() {
     delete[] board;
 }
 
+/*
+* doDC is based off of a Cornell heuristic to count discs for each
+* team and result in a weighted score
+* @param oppColor - opponent Side
+*/
 double Player::doDC(Side oppcolor)
 {
     int m = 0, opp = 0;
@@ -53,43 +69,63 @@ double Player::doDC(Side oppcolor)
     return (100)*(m-opp)/(m+opp);
 }
 
-double Player::doCorner()
+/*
+* doCorner is based off of a Cornell heuristic to
+* determine the number of corners each opponent has.
+*/
+int Player::doCorner(Board *cboard, Side ourcolor)
 {
     int m = 0, opp = 0;
-    if (board->checkMove(new Move(0, 0), ourcolor))
+    Move* tcl = new Move(0, 0);
+    Move* tcr = new Move(7, 0);
+    Move* bcl = new Move(0, 7);
+    Move* bcr = new Move(7, 7);
+
+    if (cboard->checkMove(tcl, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    if (board->checkMove(new Move(7, 0), ourcolor))
+
+    if (cboard->checkMove(tcr, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    if (board->checkMove(new Move(0, 7), ourcolor))
+
+    if (cboard->checkMove(bcl, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    if (board->checkMove(new Move(7, 7), ourcolor))
+
+    if (cboard->checkMove(bcr, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    return 100* (m-opp)/(m+opp);
+
+    delete tcl, tcr, bcl, bcr;
+    return CORNER_WEIGHT* (m);
 }
+
+void Player::setBoard()
+{
+     char boardData[64] = {
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', 'b', ' ', ' ', ' ', ' ', ' ', ' ',
+        'b', 'w', 'b', 'b', 'b', 'b', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
+    };
+    board->setBoard(boardData);
+}
+
+void Player::freeMoves(vector<Move*> possible_moves)
+{
+    possible_moves.clear();
+}
+
+
 /*
  * Compute the next move given the opponent's last move. Your AI is
  * expected to keep track of the board on its own. If this is the first move,
@@ -121,41 +157,58 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
     if (opponentsMove != nullptr)
     {
-        board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
+        board->doMove(opponentsMove, oppcolor);
     }
     if (board->hasMoves(ourcolor))
     {
         if (testingMinimax)
         {
-            // RIRI CODE
+            setBoard();
+        }
+        if (better)
+        {
             vector<Move*> possible_moves = possMoves(board, ourcolor);
-            int cx, cy, tscore, maxscore;
+            int cx, cy, tscore, maxscore, alpha, beta;
             maxscore = -1e9;
+            alpha = -1e9;
+            beta = 1e9;
             tscore = 0;
+            std::cerr << "Possible Moves: " << possible_moves.size() << std::endl;
 
+            if (possible_moves.size() <= 0)
+            {
+                return nullptr;
+            }
             for (int i = 0; i < possible_moves.size(); i++)
             {
+                std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
                 Board *copied = board->copy();
-                copied->doMove(new Move(possible_moves[i]->getX(), possible_moves[i]->getY()), ourcolor);
-                tscore = minimax(copied, 3, oppcolor);
+                copied->doMove(possible_moves[i], ourcolor);
+                tscore = ab(copied, DLEVEL, ourcolor, oppcolor, alpha, beta);
                 if (tscore > maxscore)
                 {
                     maxscore = tscore;
                     cx = possible_moves[i]->getX();
                     cy = possible_moves[i]->getY();
                 }
+
+                delete copied;
             }
 
-            return new Move(cx, cy);
+            Move* myMove = new Move(cx, cy);
+            board->doMove(myMove, ourcolor);
+
+            freeMoves(possible_moves);
+            return myMove;
         }
         else
         {
             // Based on heuristics from: Cornell Othello
-            double c, dc, maxhc;
-            int m, maxx, maxxy, opp, multiplier;
+            double dc, maxhc;
+            int c, m, maxx, maxxy, opp, multiplier;
 
             // corners
-            c = doCorner();
+            c = doCorner(board, ourcolor);
 
             //disc count
             dc = doDC(oppcolor);
@@ -246,6 +299,10 @@ vector<Move*> Player::possMoves(Board *cboard, Side side)
             {
                 moves.push_back(play);
             }
+            else
+            {
+                delete play;
+            }
         }
     }
     return moves;
@@ -253,7 +310,8 @@ vector<Move*> Player::possMoves(Board *cboard, Side side)
 
 /*
  * Minimax helper function for minimax
- * Welp I hope this works
+ * @param board, depth, side for opposite player
+ * @return alpha (score)
  */
 int Player::minimax(Board *cboard, int depth, Side oppcolor)
 {
@@ -277,6 +335,7 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
 
     if (possible_moves.size() == 0 || depth <= 0)
     {
+        freeMoves(possible_moves);
         return -cboard->count(oppcolor)+cboard->count(ourcolor);
     }
     else
@@ -287,24 +346,118 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
             copied->doMove(possible_moves[i], oppcolor);
 
             // calls heuristic to generate score for possible move
-            temp = minimax(copied, depth-1, oppcolor);
+            temp = -minimax(copied, depth-1, oppcolor);
 
             // delete copy of board?
 
             if (alpha < temp)
             {
-                cx = possible_moves[i]->getX();
-                cy = possible_moves[i]->getY();
+                // cx = possible_moves[i]->getX();
+                // cy = possible_moves[i]->getY();
                 alpha = temp;
             }
+            delete copied;
         }
 
-        if (cx != -1)
-        {
-            cboard->doMove(new Move(cx, cy), oppcolor);
-        }
+        // if (cx != -1)
+        // {
+        //     cboard->doMove(new Move(cx, cy), oppcolor);
+        // }
 
         // return alpha;
+        freeMoves(possible_moves);
+        return alpha;
+    }
+}
+
+int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha, int beta)
+{
+    vector<Move*> possible_moves = possMoves(cboard, oppcolor);
+
+    int temp, ccorners, ocorners;
+    int cx = -1, cy = -1;
+
+    if (possible_moves.size() == 0 || depth <= 0)
+    {
+        ccorners = doCorner(cboard, current);
+        ocorners = doCorner(cboard, oppcolor);
+        for (int i = 0; i < possible_moves.size(); i++)
+        {
+            if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
+            {
+                if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
+                {
+                    ocorners += 10;
+                }
+                else
+                {
+                    ocorners += 5;
+                }
+            }
+            else if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
+            {
+                ocorners += 5;
+            }
+        }
+        vector<Move*> cpossible_moves = possMoves(cboard, current);
+        for (int i = 0; i < cpossible_moves.size(); i++)
+        {
+            if (cpossible_moves[i]->getX() == 0 || cpossible_moves[i]->getX() == 7)
+            {
+                if (cpossible_moves[i]->getY() == 0 || cpossible_moves[i]->getY() == 7)
+                {
+                    ccorners += CORNER_WEIGHT;
+                }
+                else
+                {
+                    ccorners += EDGE_WEIGHT;
+                }
+            }
+            else if (cpossible_moves[i]->getY() == 0 || cpossible_moves[i]->getY() == 7)
+            {
+                ccorners += EDGE_WEIGHT;
+            }
+        }
+        freeMoves(possible_moves);
+        freeMoves(cpossible_moves);
+        return -cboard->count(oppcolor)+cboard->count(current)-ocorners+ccorners;
+    }
+    else
+    {
+        for (int i = 0; i < possible_moves.size(); i++)
+        {
+            Board *copied = cboard->copy();
+            copied->doMove(possible_moves[i], oppcolor);
+
+            // calls heuristic to generate score for possible move
+            temp = -ab(copied, depth-1, oppcolor, current, -beta, -alpha);
+
+            // delete copy of board?
+
+            if (alpha < temp)
+            {
+                // cx = possible_moves[i]->getX();
+                // cy = possible_moves[i]->getY();
+                alpha = temp;
+            }
+            if (temp >= beta)
+            {
+                //std::cerr << "beta: " << beta << std::endl;
+                freeMoves(possible_moves);
+                delete copied;
+                return beta;
+            }
+            delete copied;
+        }
+
+        // if (cx != -1)
+        // {
+        //     cboard->doMove(new Move(cx, cy), oppcolor);
+        // }
+
+        // return alpha;
+        //std::cerr << "alpha: " << alpha << std::endl;
+        freeMoves(possible_moves);
         return alpha;
     }
 }

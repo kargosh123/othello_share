@@ -14,10 +14,13 @@ public:
     ~Player();
 
     double doDC(Side oppcolor);
-    double doCorner();
+    int doCorner(Board *cboard, Side current);
+    void setBoard();
+    void freeMoves(vector<Move*> possible_moves);
     Move *doMove(Move *opponentsMove, int msLeft);
     vector<Move*> possMoves(Board *board, Side side);
-    int minimax(Board *board, int depth, Side oppcolor);
+    int minimax(Board *cboard, int depth, Side oppcolor);
+    int ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha, int beta);
 
     // Flag to tell if the player is running within the test_minimax context
     bool testingMinimax;
