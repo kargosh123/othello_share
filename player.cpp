@@ -73,42 +73,36 @@ double Player::doDC(Side oppcolor)
 * doCorner is based off of a Cornell heuristic to
 * determine the number of corners each opponent has.
 */
-double Player::doCorner()
+int Player::doCorner(Board *cboard, Side ourcolor)
 {
     int m = 0, opp = 0;
-    if (board->checkMove(new Move(0, 0), ourcolor))
+    Move* tcl = new Move(0, 0);
+    Move* tcr = new Move(7, 0);
+    Move* bcl = new Move(0, 7);
+    Move* bcr = new Move(7, 7);
+
+    if (cboard->checkMove(tcl, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    if (board->checkMove(new Move(7, 0), ourcolor))
+
+    if (cboard->checkMove(tcr, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    if (board->checkMove(new Move(0, 7), ourcolor))
+
+    if (cboard->checkMove(bcl, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    if (board->checkMove(new Move(7, 7), ourcolor))
+
+    if (cboard->checkMove(bcr, ourcolor))
     {
         m++;
     }
-    else
-    {
-        opp++;
-    }
-    return 100* (m-opp)/(m+opp);
+
+    delete tcl, tcr, bcl, bcr;
+    return 10* (m);
 }
 
 void Player::setBoard()
@@ -210,11 +204,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         else
         {
             // Based on heuristics from: Cornell Othello
-            double c, dc, maxhc;
-            int m, maxx, maxxy, opp, multiplier;
+            double dc, maxhc;
+            int c, m, maxx, maxxy, opp, multiplier;
 
             // corners
-            c = doCorner();
+            c = doCorner(board, ourcolor);
 
             //disc count
             dc = doDC(oppcolor);
@@ -305,7 +299,10 @@ vector<Move*> Player::possMoves(Board *cboard, Side side)
             {
                 moves.push_back(play);
             }
-            delete play;
+            else
+            {
+                delete play;
+            }
         }
     }
     return moves;
@@ -377,13 +374,53 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
 {
     vector<Move*> possible_moves = possMoves(cboard, oppcolor);
 
-    int temp;
+    int temp, ccorners, ocorners;
     int cx = -1, cy = -1;
 
     if (possible_moves.size() == 0 || depth <= 0)
     {
+        ccorners = doCorner(cboard, current);
+        ocorners = doCorner(cboard, oppcolor);
+        for (int i = 0; i < possible_moves.size(); i++)
+        {
+            if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
+            {
+                if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
+                {
+                    ocorners += 10;
+                }
+                else
+                {
+                    ocorners += 5;
+                }
+            }
+            else if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
+            {
+                ocorners += 5;
+            }
+        }
+        vector<Move*> cpossible_moves = possMoves(cboard, current);
+        for (int i = 0; i < cpossible_moves.size(); i++)
+        {
+            if (cpossible_moves[i]->getX() == 0 || cpossible_moves[i]->getX() == 7)
+            {
+                if (cpossible_moves[i]->getY() == 0 || cpossible_moves[i]->getY() == 7)
+                {
+                    ccorners += 10;
+                }
+                else
+                {
+                    ccorners += 5;
+                }
+            }
+            else if (cpossible_moves[i]->getY() == 0 || cpossible_moves[i]->getY() == 7)
+            {
+                ccorners += 5;
+            }
+        }
         freeMoves(possible_moves);
-        return -cboard->count(oppcolor)+cboard->count(current);
+        freeMoves(cpossible_moves);
+        return -cboard->count(oppcolor)+cboard->count(current)-ocorners+ccorners;
     }
     else
     {
@@ -405,7 +442,7 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
             }
             if (temp >= beta)
             {
-                std::cerr << "beta: " << beta << std::endl;
+                //std::cerr << "beta: " << beta << std::endl;
                 freeMoves(possible_moves);
                 delete copied;
                 return beta;
@@ -419,7 +456,7 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
         // }
 
         // return alpha;
-        std::cerr << "alpha: " << alpha << std::endl;
+        //std::cerr << "alpha: " << alpha << std::endl;
         freeMoves(possible_moves);
         return alpha;
     }

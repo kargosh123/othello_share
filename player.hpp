@@ -14,7 +14,7 @@ public:
     ~Player();
 
     double doDC(Side oppcolor);
-    double doCorner();
+    int doCorner(Board *cboard, Side current);
     void setBoard();
     void freeMoves(vector<Move*> possible_moves);
     Move *doMove(Move *opponentsMove, int msLeft);
