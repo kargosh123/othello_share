@@ -298,6 +298,7 @@ vector<Move*> Player::possMoves(Board *cboard, Side side)
             if(cboard->checkMove(play, side))
             {
                 moves.push_back(play);
+                delete play;
             }
             else
             {
