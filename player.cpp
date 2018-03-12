@@ -461,37 +461,3 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
         return alpha;
     }
 }
-
-idk Player::ABPruner(Board *cboard, int depth, Side oppcolor)
-{
-    if (turn == BLACK) {
-        g = -INF;
-        //sort the moves by their estimated score
-        sort(mvs, mvs+(n+1), pair_more);
-        float alpha = a;
-        for (int i = 0; i < n && alpha < b; i++) {
-            BitBoard btmp = bd;
-            btmp.do_move(rmvs[mvs[i].second], turn);
-
-            float v = alpha_beta_search(btmp, alpha, b, d-1, OTHER_SIDE(turn));
-
-            g = max(g, v);
-            alpha = max(alpha, g);
-        }
-    } else {
-        g = INF;
-        //sort the moves by their estimated score
-        sort(mvs, mvs+(n+1), pair_less);
-        float beta = b;
-        for (int i = 0; i < n && a < beta; i++) {
-            BitBoard btmp = bd;
-            btmp.do_move(rmvs[mvs[i].second], turn);
-
-            float v = alpha_beta_search(btmp, a, beta, d-1, OTHER_SIDE(turn));
-
-            g = min(g, v);
-            beta = min(beta, g);
-        }
-    }
-
-}
