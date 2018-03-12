@@ -15,6 +15,7 @@ public:
 
     double doDC(Side oppcolor);
     double doCorner();
+    void setBoard();
     Move *doMove(Move *opponentsMove, int msLeft);
     vector<Move*> possMoves(Board *board, Side side);
     int minimax(Board *board, int depth, Side oppcolor);

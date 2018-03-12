@@ -99,6 +99,23 @@ double Player::doCorner()
     }
     return 100* (m-opp)/(m+opp);
 }
+
+void Player::setBoard()
+{
+     char boardData[64] = {
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', 'b', ' ', ' ', ' ', ' ', ' ', ' ',
+        'b', 'w', 'b', 'b', 'b', 'b', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
+    };
+    board->setBoard(boardData);
+}
+
+
 /*
  * Compute the next move given the opponent's last move. Your AI is
  * expected to keep track of the board on its own. If this is the first move,
@@ -136,6 +153,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     {
         if (testingMinimax)
         {
+            setBoard();
             vector<Move*> possible_moves = possMoves(board, ourcolor);
             int cx, cy, tscore, maxscore;
             maxscore = -1e9;
@@ -296,7 +314,7 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
             copied->doMove(possible_moves[i], oppcolor);
 
             // calls heuristic to generate score for possible move
-            temp = minimax(copied, depth-1, oppcolor);
+            temp = -minimax(copied, depth-1, oppcolor);
 
             // delete copy of board?
 
