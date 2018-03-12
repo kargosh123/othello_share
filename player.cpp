@@ -150,14 +150,12 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     }
     if (opponentsMove != nullptr)
     {
-        //board->doMove(new Move(opponentsMove->getX(), opponentsMove->getY()), oppcolor);
         board->doMove(opponentsMove, oppcolor);
     }
     if (board->hasMoves(ourcolor))
     {
         if (testingMinimax)
         {
-            std::cerr << "true" << std::endl;
             setBoard();
         }
         if (!better)
@@ -172,17 +170,24 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             {
                 std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
                 Board *copied = board->copy();
-                copied->doMove(new Move(possible_moves[i]->getY(), possible_moves[i]->getX()), ourcolor);
+                copied->doMove(possible_moves[i], ourcolor);
                 tscore = minimax(copied, DLEVEL, oppcolor);
                 if (tscore > maxscore)
                 {
                     maxscore = tscore;
-                    cx = possible_moves[i]->getY();
-                    cy = possible_moves[i]->getX();
+                    cx = possible_moves[i]->getX();
+                    cy = possible_moves[i]->getY();
                 }
             }
 
-            return new Move(cx, cy);
+            Move* myMove = new Move(cx, cy);
+            board->doMove(myMove, ourcolor);
+
+            while (possible_moves.size() > 0)
+            {
+                possible_moves.pop_back();
+            }
+            return myMove;
         }
         else
         {
@@ -334,6 +339,7 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
                 cy = possible_moves[i]->getY();
                 alpha = temp;
             }
+            delete copied;
         }
 
         if (cx != -1)
@@ -342,6 +348,10 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
         }
 
         // return alpha;
+        while (possible_moves.size() > 0)
+        {
+            possible_moves.pop_back();
+        }
         return alpha;
     }
 }
