@@ -1,7 +1,7 @@
 #include "player.hpp"
 #include <vector>
-#define EDGE_WEIGHT     25
-#define CORNER_WEIGHT   100
+#define EDGE_WEIGHT     5
+#define CORNER_WEIGHT   10
 #define ADJ_C_WEIGHT    -100
 #define ADJ_C_MID_WT    -200
 #define OTHERS          1
@@ -102,7 +102,7 @@ int Player::doCorner(Board *cboard, Side ourcolor)
     }
 
     delete tcl, tcr, bcl, bcr;
-    return 10* (m);
+    return CORNER_WEIGHT* (m);
 }
 
 void Player::setBoard()
@@ -406,16 +406,16 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
             {
                 if (cpossible_moves[i]->getY() == 0 || cpossible_moves[i]->getY() == 7)
                 {
-                    ccorners += 10;
+                    ccorners += CORNER_WEIGHT;
                 }
                 else
                 {
-                    ccorners += 5;
+                    ccorners += EDGE_WEIGHT;
                 }
             }
             else if (cpossible_moves[i]->getY() == 0 || cpossible_moves[i]->getY() == 7)
             {
-                ccorners += 5;
+                ccorners += EDGE_WEIGHT;
             }
         }
         freeMoves(possible_moves);
