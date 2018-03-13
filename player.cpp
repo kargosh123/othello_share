@@ -460,8 +460,6 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
             // calls heuristic to generate score for possible move
             temp = -minimax(copied, depth-1, oppcolor);
 
-            // delete copy of board?
-
             if (alpha < temp)
             {
                 // cx = possible_moves[i]->getX();
