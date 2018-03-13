@@ -1,4 +1,4 @@
-Neymika's Corner Version 
+Neymika's Corner Version - Depth 3
 (Weights: 10 - Corner, 5 - Edge)
  - bozoteam: Black
 	Loss: 12
@@ -44,5 +44,38 @@ Neymika's Corner Version
 	Loss: 8
 	Win: 12
 	Rate: 60%
+
+Neymika's Corner Version - Depth 4
+(Weights: 10 - Corner, 5 - Edge, 20 - Possible Corner, Always Take Corner)
+ - bozoteam: Black
+	Loss: 9
+	Win: 11
+	Rate: 55%
+ - bozoteam: White
+	Loss: 12
+	Win: 8
+	Rate: 40%
+(Weights: 10 - Corner, 7 - Edge, 20 - Possible Corner, Always Take Corner
+Take into Account Adjacent Tiles, 1 - Adjacent on Edge, 5 - Middle Adjacent, 7 - Total Adj Weight)
+ - bozoteam: Black
+	Loss: 11
+	Win: 9
+	Rate: 45% (changed to 7 in the middle)
+ - bozoteam: White
+	Loss: 13
+	Win: 7
+	Rate: 35%
+
+(Weights: 10 - Corner, 7 - Edge, 20 - Possible Corner
+Take into Account Adjacent Tiles, 1 - Adjacent on Edge, 5 - Middle Adjacent, 7 - Total Adj Weight)
+ - bozoteam: Black
+	Loss: 7
+	Win: 1
+	Rate: 
+ - bozoteam: White
+	Loss: 
+	Win: 
+	Rate: 
+
 
 
