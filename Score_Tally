@@ -1,4 +1,28 @@
-Neymika's Corner Version
+Neymika's Corner Version 
+(Weights: 10 - Corner, 5 - Edge)
  - bozoteam: Black
-	
+	Loss: 12
+	Win: 8
+	Rate: 40%
  - bozoteam: White
+	Loss: 13
+	Win: 7
+	Rate: 35%
+(Weights: 20 - Corner, 5 - Edge)
+ - bozoteam: Black
+	Loss: 13
+	Win: 7
+	Rate: 35%
+ - bozoteam: White
+	Loss: 15
+	Win: 5
+	Rate: 25%
+(Switch calculations)
+ - bozoteam: Black
+	Loss: 20
+	Win: 0
+	Rate: 0%
+ - bozoteam: White
+	Loss: 18
+	Win: 2
+	Rate: 10%
