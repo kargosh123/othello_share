@@ -1,11 +1,11 @@
 #include "player.hpp"
 #include <vector>
-#define EDGE_WEIGHT     5
+#define EDGE_WEIGHT     7
 #define CORNER_WEIGHT   10
-#define ADJ_C_WEIGHT    -100
-#define ADJ_C_MID_WT    -200
+#define ADJ_C_WEIGHT    7
+#define ADJ_C_MID_WT    5
 #define OTHERS          1
-#define DLEVEL          3
+#define DLEVEL          4
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -69,6 +69,98 @@ double Player::doDC(Side oppcolor)
     return (100)*(m-opp)/(m+opp);
 }
 
+int Player::doAdjacent(Board *cboard, Side ourcolor)
+{
+    int m = 0, opp = 0;
+    Move* tcl = new Move(1, 0);
+    Move* tcr = new Move(0, 1);
+    Move* bcl = new Move(6, 0);
+    Move* bcr = new Move(0, 6);
+    Move* top_bad_l = new Move(1, 1);
+    Move* top_bad_r = new Move(6, 1);
+
+    Move* tcl_bt = new Move(1, 7);
+    Move* tcr_bt = new Move(7, 1);
+    Move* bcl_bt = new Move(6, 7);
+    Move* bcr_bt = new Move(7, 6);
+    Move* bot_bad_l = new Move(6, 6);
+    Move* bot_bad_r = new Move(1, 6);
+
+    if (cboard->checkMove(tcl, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(tcr, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(bcl, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(bcr, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(tcl_bt, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(tcr_bt, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(bcl_bt, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(bcr_bt, ourcolor))
+    {
+        m++;
+    }
+
+    if (cboard->checkMove(top_bad_r, ourcolor))
+    {
+        m += ADJ_C_MID_WT;
+    }
+
+    if (cboard->checkMove(top_bad_l, ourcolor))
+    {
+        m += ADJ_C_MID_WT;
+    }
+
+    if (cboard->checkMove(bot_bad_r, ourcolor))
+    {
+        m += ADJ_C_MID_WT;
+    }
+
+    if (cboard->checkMove(bot_bad_l, ourcolor))
+    {
+        m += ADJ_C_MID_WT;
+    }
+
+    delete tcl;
+    delete tcr;
+    delete bcl;
+    delete bcr;
+    delete top_bad_l;
+    delete top_bad_r;
+    delete tcl_bt;
+    delete tcr_bt;
+    delete bcl_bt;
+    delete bcr_bt;
+    delete bot_bad_l;
+    delete bot_bad_r;;
+    return ADJ_C_WEIGHT* (m);
+}
+
 /*
 * doCorner is based off of a Cornell heuristic to
 * determine the number of corners each opponent has.
@@ -101,7 +193,10 @@ int Player::doCorner(Board *cboard, Side ourcolor)
         m++;
     }
 
-    delete tcl, tcr, bcl, bcr;
+    delete tcl;
+    delete tcr;
+    delete bcl;
+    delete bcr;
     return CORNER_WEIGHT* (m);
 }
 
@@ -122,7 +217,14 @@ void Player::setBoard()
 
 void Player::freeMoves(vector<Move*> possible_moves)
 {
-    possible_moves.clear();
+    int index = 0;
+
+    while (index < possible_moves.size())
+    {
+        Move* temp = possible_moves[index];
+        delete temp;
+        index++;
+    }
 }
 
 
@@ -173,7 +275,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             alpha = -1e9;
             beta = 1e9;
             tscore = 0;
-            std::cerr << "Possible Moves: " << possible_moves.size() << std::endl;
+            //std::cerr << "Possible Moves: " << possible_moves.size() << std::endl;
 
             if (possible_moves.size() <= 0)
             {
@@ -181,7 +283,17 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             }
             for (int i = 0; i < possible_moves.size(); i++)
             {
-                std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
+                //std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
+                // if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
+                // {
+                //     if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
+                //     {
+                //         Move* myMove = new Move(possible_moves[i]->getX(), possible_moves[i]->getY());
+                //         board->doMove(myMove, ourcolor);
+                //         freeMoves(possible_moves);
+                //         return myMove;
+                //     }
+                // }
                 Board *copied = board->copy();
                 copied->doMove(possible_moves[i], ourcolor);
                 tscore = ab(copied, DLEVEL, ourcolor, oppcolor, alpha, beta);
@@ -374,29 +486,27 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
 {
     vector<Move*> possible_moves = possMoves(cboard, oppcolor);
 
-    int temp, ccorners, ocorners;
+    int temp, ccorners, ocorners, adjc, adjo;
     int cx = -1, cy = -1;
 
     if (possible_moves.size() == 0 || depth <= 0)
     {
         ccorners = doCorner(cboard, current);
         ocorners = doCorner(cboard, oppcolor);
+        adjc = doAdjacent(cboard, current);
+        adjo = doAdjacent(cboard, oppcolor);
         for (int i = 0; i < possible_moves.size(); i++)
         {
             if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
             {
                 if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
                 {
-                    ocorners += 10;
+                    ocorners += (2*CORNER_WEIGHT);
                 }
                 else
                 {
-                    ocorners += 5;
+                    ocorners += EDGE_WEIGHT;
                 }
-            }
-            else if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
-            {
-                ocorners += 5;
             }
         }
         vector<Move*> cpossible_moves = possMoves(cboard, current);
@@ -413,14 +523,11 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
                     ccorners += EDGE_WEIGHT;
                 }
             }
-            else if (cpossible_moves[i]->getY() == 0 || cpossible_moves[i]->getY() == 7)
-            {
-                ccorners += EDGE_WEIGHT;
-            }
         }
         freeMoves(possible_moves);
         freeMoves(cpossible_moves);
-        return -cboard->count(oppcolor)+cboard->count(current)-ocorners+ccorners;
+        return -cboard->count(oppcolor)+cboard->count(current)
+        -ocorners+ccorners-adjc+adjo;
     }
     else
     {
