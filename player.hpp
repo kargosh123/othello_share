@@ -16,6 +16,7 @@ public:
     double doDC(Side oppcolor);
     int doCorner(Board *cboard, Side current);
     int doAdjacent(Board *cboard, Side current);
+    int mobility(Board *cboard, Side current, Side oppcolor);
     void setBoard();
     void freeMoves(vector<Move*> possible_moves);
     Move *doMove(Move *opponentsMove, int msLeft);

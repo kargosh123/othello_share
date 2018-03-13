@@ -484,7 +484,7 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
 {
     vector<Move*> possible_moves = possMoves(cboard, oppcolor);
 
-    int temp, ccorners = 0, ocorners = 0, adjc = 0, adjo = 0;
+    int temp, ccorners = 0, ocorners = 0, adjc = 0, adjo = 0, mob = 0;
     int cx = -1, cy = -1;
 
     if (possible_moves.size() == 0 || depth <= 0)
@@ -493,6 +493,7 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
         // ocorners = doCorner(cboard, oppcolor);
         // adjc = doAdjacent(cboard, current);
         // adjo = doAdjacent(cboard, oppcolor);
+        mob = mobility(cboard, current, oppcolor);
         for (int i = 0; i < possible_moves.size(); i++)
         {
             if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
@@ -539,7 +540,7 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
         freeMoves(possible_moves);
         freeMoves(cpossible_moves);
         return -cboard->count(oppcolor)+cboard->count(current)
-        -ocorners+ccorners+adjc-adjo;
+        -ocorners+ccorners+adjc-adjo+mob;
     }
     else
     {
@@ -595,20 +596,24 @@ Count number of empty spaces next to at least 1 of opponent discs
 FACTOR THIS INTO HEURISTIC & OR AB PRUNING
 */
 
-double Player::mobility(Board *cboard, Side current, Side oppcolor)
+int Player::mobility(Board *cboard, Side current, Side oppcolor)
 {
     double mobility = 0.0;
-    vector<Board::Move> memoves = cboard.possMoves(*cboard, current);
-    vector<Board::Move> youmoves = cboard.possMoves(*cboard, oppcolor);
+    int mobWeight = 5;
+    vector<Move*> memoves = possMoves(cboard, current);
+    vector<Move*> youmoves = possMoves(cboard, oppcolor);
 
-    if (memoves + youmoves != 0)
+    if (memoves.size() + youmoves.size() != 0)
     {
         mobility = 100.0 * (memoves.size() - youmoves.size()) / (memoves.size() + youmoves.size());
     }
 
+    // ADD THIS VALUE TO HEURISTIC WEIGHT RETURN VALUE
+    mobility = (mobility * mobWeight);
+
 // mobility = 100.0*mypossMoves.size()/(mypossMoves.size() + opppossMoves.size());
 
-return mobility;
+return (int) mobility;
 }
 
 /*
