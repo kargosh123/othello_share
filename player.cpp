@@ -5,7 +5,7 @@
 #define ADJ_C_WEIGHT    -100
 #define ADJ_C_MID_WT    -200
 #define OTHERS          1
-#define DLEVEL          3
+#define DLEVEL          4
 
 /*
  * Constructor for the player; initialize everything here. The side your AI is
@@ -101,7 +101,10 @@ int Player::doCorner(Board *cboard, Side ourcolor)
         m++;
     }
 
-    delete tcl, tcr, bcl, bcr;
+    delete tcl;
+    delete tcr;
+    delete bcl;
+    delete bcr;
     return CORNER_WEIGHT* (m);
 }
 
@@ -122,7 +125,14 @@ void Player::setBoard()
 
 void Player::freeMoves(vector<Move*> possible_moves)
 {
-    possible_moves.clear();
+    int index = 0;
+
+    while (index < possible_moves.size())
+    {
+        Move* temp = possible_moves[index];
+        delete temp;
+        index++;
+    }
 }
 
 
