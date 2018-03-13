@@ -568,3 +568,64 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
         return alpha;
     }
 }
+
+
+/*
+Some Pseudocode for Mobility
+1) Actual or Current Mobility (Short Term)
+(number of next moves player has given current state of game)
+Count number of legal moves for player (use vector)
+
+2) Potential Mobility (Long Term)
+(number of possible moves player might have over next few moves)
+Count number of empty spaces next to at least 1 of opponent discs
+
+FACTOR THIS INTO HEURISTIC & OR AB PRUNING
+*/
+
+double Player::mobility(Board *cboard, Side current, Side oppcolor)
+{
+    double mobility = 0.0;
+    vector<Board::Move> memoves = cboard.possMoves(*cboard, current);
+    vector<Board::Move> youmoves = cboard.possMoves(*cboard, oppcolor);
+
+    if (memoves + youmoves != 0)
+    {
+        mobility = 100.0 * (memoves.size() - youmoves.size()) / (memoves.size() + youmoves.size());
+    }
+
+// mobility = 100.0*mypossMoves.size()/(mypossMoves.size() + opppossMoves.size());
+
+return mobility;
+}
+
+/*
+int Player::frontierSq()
+{
+    int myEdges = 0;
+    int youEdges = 0;
+    int myFrontier = 0;
+    int youFrontier = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            if (i == 0 || i == 7 || j == 0 || j == 7)
+            {
+                if (cboard[i][j] == maxPlayer) myEdges++;
+                else if(cboard[i][j] == oppcolor) youEdges++;
+            }
+            else if(cboard[i][j] != '0')
+            {
+                if(board is on frontier(i, j))
+                {
+                    if(cboard[i][j] == ourcolor) myFrontier++;
+                    else if(cboard[i][j] == oppcolor) youFrontier++;
+                }
+            }
+        }
+    }
+    edges = 100.0*myEdges/(myEdges + youEdges);
+    frontier = -100*(myFrontier - youFrontier);
+}
+*/
