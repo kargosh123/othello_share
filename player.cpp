@@ -173,7 +173,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             alpha = -1e9;
             beta = 1e9;
             tscore = 0;
-            std::cerr << "Possible Moves: " << possible_moves.size() << std::endl;
+            //std::cerr << "Possible Moves: " << possible_moves.size() << std::endl;
 
             if (possible_moves.size() <= 0)
             {
@@ -181,7 +181,17 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             }
             for (int i = 0; i < possible_moves.size(); i++)
             {
-                std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
+                //std::cerr << "Possible Move: (" << possible_moves[i]->getX() << ", " << possible_moves[i]->getY() << ")" << std::endl;
+                if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
+                {
+                    if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
+                    {
+                        Move* myMove = new Move(possible_moves[i]->getX(), possible_moves[i]->getY());
+                        board->doMove(myMove, ourcolor);
+                        freeMoves(possible_moves);
+                        return myMove;
+                    }
+                }
                 Board *copied = board->copy();
                 copied->doMove(possible_moves[i], ourcolor);
                 tscore = ab(copied, DLEVEL, ourcolor, oppcolor, alpha, beta);
@@ -387,11 +397,11 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
             {
                 if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
                 {
-                    ocorners += 10;
+                    ocorners += 20;
                 }
                 else
                 {
-                    ocorners += 5;
+                    ocorners += EDGE_WEIGHT;
                 }
             }
             else if (possible_moves[i]->getY() == 0 || possible_moves[i]->getY() == 7)
