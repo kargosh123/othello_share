@@ -1,7 +1,7 @@
 #include "player.hpp"
 #include <vector>
 #define EDGE_WEIGHT     5
-#define CORNER_WEIGHT   20
+#define CORNER_WEIGHT   10
 #define ADJ_C_WEIGHT    -100
 #define ADJ_C_MID_WT    -200
 #define OTHERS          1
@@ -420,7 +420,7 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
         }
         freeMoves(possible_moves);
         freeMoves(cpossible_moves);
-        return -(-cboard->count(oppcolor)+cboard->count(current)-ocorners+ccorners);
+        return -cboard->count(oppcolor)+cboard->count(current)-ocorners+ccorners;
     }
     else
     {
