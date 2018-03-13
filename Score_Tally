@@ -66,15 +66,24 @@ Take into Account Adjacent Tiles, 1 - Adjacent on Edge, 5 - Middle Adjacent, 7 -
 	Win: 7
 	Rate: 35%
 
-(Weights: 10 - Corner, 7 - Edge, 20 - Possible Corner
-Take into Account Adjacent Tiles, 1 - Adjacent on Edge, 5 - Middle Adjacent, 7 - Total Adj Weight)
+(Screw everything)
  - bozoteam: Black
-	Loss: 7
-	Win: 1
+	Loss: 9
+	Win: 11
+	Rate: 55%
+ - bozoteam: White
+	Loss: 6
+	Win: 14
+	Rate: 70%
+
+(Screw everything vs. BetterPlayer)
+ - bozoteam: Black
+	Loss: 2 
+	Win: 
 	Rate: 
  - bozoteam: White
 	Loss: 
-	Win: 
+	Win: 2
 	Rate: 
 
 

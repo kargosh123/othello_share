@@ -3,7 +3,7 @@
 #define EDGE_WEIGHT     7
 #define CORNER_WEIGHT   10
 #define ADJ_C_WEIGHT    7
-#define ADJ_C_MID_WT    5
+#define ADJ_C_MID_WT    7
 #define OTHERS          1
 #define DLEVEL          4
 
@@ -486,15 +486,15 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
 {
     vector<Move*> possible_moves = possMoves(cboard, oppcolor);
 
-    int temp, ccorners, ocorners, adjc, adjo;
+    int temp, ccorners = 0, ocorners = 0, adjc = 0, adjo = 0;
     int cx = -1, cy = -1;
 
     if (possible_moves.size() == 0 || depth <= 0)
     {
-        ccorners = doCorner(cboard, current);
-        ocorners = doCorner(cboard, oppcolor);
-        adjc = doAdjacent(cboard, current);
-        adjo = doAdjacent(cboard, oppcolor);
+        // ccorners = doCorner(cboard, current);
+        // ocorners = doCorner(cboard, oppcolor);
+        // adjc = doAdjacent(cboard, current);
+        // adjo = doAdjacent(cboard, oppcolor);
         for (int i = 0; i < possible_moves.size(); i++)
         {
             if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
@@ -506,6 +506,13 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
                 else
                 {
                     ocorners += EDGE_WEIGHT;
+                }
+            }
+            if (possible_moves[i]->getX() == 1 || possible_moves[i]->getX() == 6)
+            {
+                if (possible_moves[i]->getY() == 1 || possible_moves[i]->getY() == 6)
+                {
+                    adjo -=ADJ_C_MID_WT;
                 }
             }
         }
@@ -523,11 +530,18 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
                     ccorners += EDGE_WEIGHT;
                 }
             }
+            if (cpossible_moves[i]->getX() == 1 || cpossible_moves[i]->getX() == 6)
+            {
+                if (cpossible_moves[i]->getY() == 1 || cpossible_moves[i]->getY() == 6)
+                {
+                    adjc -=ADJ_C_MID_WT;
+                }
+            }
         }
         freeMoves(possible_moves);
         freeMoves(cpossible_moves);
         return -cboard->count(oppcolor)+cboard->count(current)
-        -ocorners+ccorners-adjc+adjo;
+        -ocorners+ccorners+adjc-adjo;
     }
     else
     {
