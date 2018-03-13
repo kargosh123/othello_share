@@ -86,5 +86,74 @@ Take into Account Adjacent Tiles, 1 - Adjacent on Edge, 5 - Middle Adjacent, 7 -
 	Win: 2
 	Rate: 
 
+Riana's Mobility Version
+(Screw everything + Weight: 5 - Mobility Heuristic)
+ - bozoteam: Black
+	Loss: 15
+	Win: 5
+	Rate: 25%
+ - bozoteam: White
+	Loss: 11
+	Win: 9
+	Rate: 45%
+(Screw everything + Weight: 5 - Mobility Heuristic vs. BetterPlayer)
+ - bozoteam: Black
+	Loss: 2
+	Win: 
+	Rate: 
+ - bozoteam: White
+	Loss: 2
+	Win: 
+	Rate: 
+(Screw everything + Weight: 2 - Mobility Heuristic)
+ - bozoteam: Black
+	Loss: 14
+	Win: 6
+	Rate: 30%
+ - bozoteam: White
+	Loss: 13
+	Win: 7
+	Rate: 35%
+
+Final Version
+(Screw everything)
+ - bozoteam: Black
+	Loss: 15
+	Win: 5
+	Rate: 25%
+ - bozoteam: White
+	Loss: 9
+	Win: 11
+	Rate: 55%
+(Screw everything vs. BetterPlayer)
+ - bozoteam: Black
+	Loss: 2 
+	Win: 
+	Rate: 
+ - bozoteam: White
+	Loss: 
+	Win: 2
+	Rate:
+
+(Screw everything - Corner = 15)
+ - bozoteam: Black
+	Loss: 6
+	Win: 4
+	Rate: 40%
+ - bozoteam: White
+	Loss: 4
+	Win: 6
+	Rate: 60%
+
+(Screw everything - Corner = 15 vs. BetterPlayer)
+ - bozoteam: Black
+	Loss: 2 
+	Win: 
+	Rate: 
+ - bozoteam: White
+	Loss: 
+	Win: 2
+	Rate:
+
 
 

@@ -1,7 +1,7 @@
 #include "player.hpp"
 #include <vector>
 #define EDGE_WEIGHT     7
-#define CORNER_WEIGHT   10
+#define CORNER_WEIGHT   15
 #define ADJ_C_WEIGHT    7
 #define ADJ_C_MID_WT    7
 #define OTHERS          1
@@ -294,6 +294,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 //         return myMove;
                 //     }
                 // }
+
                 Board *copied = board->copy();
                 copied->doMove(possible_moves[i], ourcolor);
                 tscore = ab(copied, DLEVEL, ourcolor, oppcolor, alpha, beta);
@@ -445,7 +446,7 @@ int Player::minimax(Board *cboard, int depth, Side oppcolor)
     int alpha = -1e9;
     int cx = -1, cy = -1;
 
-    if (possible_moves.size() == 0 || depth <= 0)
+    if (possible_moves.size() <= 0 || depth <= 0)
     {
         freeMoves(possible_moves);
         return -cboard->count(oppcolor)+cboard->count(ourcolor);
@@ -485,15 +486,14 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
     vector<Move*> possible_moves = possMoves(cboard, oppcolor);
 
     int temp, ccorners = 0, ocorners = 0, adjc = 0, adjo = 0, mob = 0;
-    int cx = -1, cy = -1;
 
-    if (possible_moves.size() == 0 || depth <= 0)
+    if (possible_moves.size() <= 0 || depth <= 0)
     {
         // ccorners = doCorner(cboard, current);
         // ocorners = doCorner(cboard, oppcolor);
         // adjc = doAdjacent(cboard, current);
         // adjo = doAdjacent(cboard, oppcolor);
-        mob = mobility(cboard, current, oppcolor);
+        //mob = mobility(cboard, current, oppcolor);
         for (int i = 0; i < possible_moves.size(); i++)
         {
             if (possible_moves[i]->getX() == 0 || possible_moves[i]->getX() == 7)
@@ -540,7 +540,7 @@ int Player::ab(Board *cboard, int depth, Side current, Side oppcolor, int alpha,
         freeMoves(possible_moves);
         freeMoves(cpossible_moves);
         return -cboard->count(oppcolor)+cboard->count(current)
-        -ocorners+ccorners+adjc-adjo+mob;
+        -ocorners+ccorners+adjc-adjo;
     }
     else
     {
@@ -599,7 +599,7 @@ FACTOR THIS INTO HEURISTIC & OR AB PRUNING
 int Player::mobility(Board *cboard, Side current, Side oppcolor)
 {
     double mobility = 0.0;
-    int mobWeight = 5;
+    int mobWeight = 2, net;
     vector<Move*> memoves = possMoves(cboard, current);
     vector<Move*> youmoves = possMoves(cboard, oppcolor);
 
@@ -609,11 +609,11 @@ int Player::mobility(Board *cboard, Side current, Side oppcolor)
     }
 
     // ADD THIS VALUE TO HEURISTIC WEIGHT RETURN VALUE
-    mobility = (mobility * mobWeight);
+    net = (int)((int)mobility * mobWeight)/10;
 
 // mobility = 100.0*mypossMoves.size()/(mypossMoves.size() + opppossMoves.size());
 
-return (int) mobility;
+return net;
 }
 
 /*
